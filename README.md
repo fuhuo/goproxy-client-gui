@@ -1,5 +1,5 @@
 # goproxy-client-gui
-### 本gui基于https://github.com/snail007/goproxy的客户端程序
+### 本gui基于https://github.com/snail007/goproxy 的客户端程序
 
 1、本程序暂时只支持windows(只在win10的64位系统测试过)
 
