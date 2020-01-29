@@ -1,23 +1,32 @@
 # goproxy-client-gui
-### 本gui基于https://github.com/snail007/goproxy 的客户端程序
+### 本gui程序基于https://github.com/snail007/goproxy 的客户端程序开发
 
-1、本程序暂时只支持windows(只在win10的64位系统测试过)
+### 快速使用说明
 
-2、需要把gpclient.exe、pacserver.exe【[下载](https://github.com/fuhuo/goproxy-client-gui/releases)】和pac.txt（自备，可使用ss的）放在goproxy的client目录下
+1、确保已配置好goproxy的client客户端【[下载](https://github.com/snail007/goproxy/releases)】的bootstrap.bat文件（确保proxy可正常使用）
 
-3、使用前先配置好自己的bootstrap.bat   
-~~（注意：之前没考虑好端口的问题，目前只能是goproxy中使用1080端口作为代理端口，后续会优化）~~
+2、【[下载](https://github.com/fuhuo/goproxy-client-gui/releases)】gpclient的最新版zip压缩包
 
-4、配置成功后，通过双击gpclient.exe运行，运行后程序会自动运行start.vbs，退出会自动退出proxy.exe
+3、把gpclient压缩包解压到goproxy的client同目录
 
-5、启动后在托盘会有小图标，通过右键【配置】菜单，配置proxy的端口和pac服务的端口，其中proxy的端口必须与你当前boostrap.bat里面配置的-p参数的值一致；pac的服务端口随意，只要不和其他端口重复导致端口被占用即可
+4、找到合适的pac.txt文件，放到goproxy的client目录（可以直接拿ss客户端的）
 
-6、在托盘中右键即可选择“关闭”、“pac”和“全局”等模式
+5、双击打开gpclient.exe小托盘->右键，点击【配置】，proxy端口配置成与你boostrap.bat的-p参数的端口一致，pac服务端口不能与系统其他服务的端口（包括proxy的端口）重复
 
-已知问题：
+6、通过gpclient.exe小托盘->右键，选择“关闭”、“pac”和“全局”等模式使用。
+
+### 说明
+
+1、本程序基于ahk和go开发，暂时只支持windows(只在win10的64位系统测试过)
+
+2、本程序通过调用proxy的start.vbs启用，安全退出时会关闭proxy.exe
+
+### 已知问题：
 
 ~~1、之前没考虑好端口的问题，目前只能是goproxy中使用1080端口作为代理端口，后续会优化~~
 
 ~~2、pac的http server端口也写死了1079，这两个端口如果有冲突，目前需要自己下载ahk脚本并用autohotkey进行重新编译成exe，后续会优化~~
 
 1、有时候会出现系统代理配置不完整的情况，需要手动重新切换一下模式，待解决
+
+2、目前仅支持单个服务配置
