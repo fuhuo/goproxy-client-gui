@@ -3,7 +3,7 @@
 
 1、本程序暂时只支持windows(只在win10的64位系统测试过)
 
-2、需要把gpclient.exe、pacserver.exe【[下载](https://github.com/fuhuo/goproxy-client-gui/releases)】和pac.txt（自备）放在goproxy的client目录下
+2、需要把gpclient.exe、pacserver.exe【[下载](https://github.com/fuhuo/goproxy-client-gui/releases)】和pac.txt（自备，可使用ss的）放在goproxy的client目录下
 
 3、使用前先配置好自己的bootstrap.bat
 
