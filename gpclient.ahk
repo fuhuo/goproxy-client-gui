@@ -129,9 +129,9 @@ return
 ; 配置GUI
 configHandler:
     Gui, 1: Add, Text, , proxy的端口：
-    Gui, 1: Add, Edit, vProxyPort, %proxyPort%
+    Gui, 1: Add, Edit, Number Limit5 vProxyPort, %proxyPort%
     Gui, 1: Add, Text, , pac服务的端口：
-    Gui, 1: Add, Edit, vPacPort, %pacPort%
+    Gui, 1: Add, Edit, Number Limit5 vPacPort, %pacPort%
     Gui, 1: Add, Button, Default w80, 保存   
     Gui, 1: Show
 return
@@ -139,10 +139,23 @@ return
 ; 把配置的端口写入
 Button保存:
     ; MsgBox, %currentMode%
+    ; 从GUI中获取Edit中vProxyPort的值
     GuiControlGet, ProxyPort
-    IniWrite, %ProxyPort%, gpclient.conf, main, proxyport
+    if(ProxyPort==""){
+        MsgBox, ProxyPort不能为空！
+        return
+    }
+    ; 从GUI中获取Edit中vPacPort的值
     GuiControlGet, PacPort
+    if(PacPort==""){
+        MsgBox, PacPort不能为空！
+        return
+    }
+    ; 把修改的值写入配置
+    IniWrite, %ProxyPort%, gpclient.conf, main, proxyport
+    ; 把修改的值写入配置
     IniWrite, %PacPort%, gpclient.conf, main, pacport
+    ; 重新配置
     setProxyMode(currentMode)
     MsgBox, 保存成功
     Gui, 1: Destroy
