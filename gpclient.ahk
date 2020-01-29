@@ -5,16 +5,24 @@
 ; OnExit, closeProxy()   ; 退出的时候执行OnExit钩子函数
 ; 托盘菜单
 Menu, tray, NoStandard   ; 关闭默认菜单
-Menu, tray, Add   ; 添加分割线
+; Menu, tray, Add   ; 添加分割线
 Menu, tray, Add, 关闭代理, closeProxyHandler
 Menu, tray, Add, pac模式, pacProxyHandler
 Menu, tray, Add, 全局模式, allProxyHandler
-Menu, tray, Add, 退出, exitHandler
 Menu, tray, Add   ; 添加分割线
+Menu, tray, Add, 配置, configHandler
+Menu, tray, Add, 退出, exitHandler
 
 ; pac的http服务监听端口
-global pacPort := 1079
-global proxyPort := 1080
+IniRead, pac_port, gpclient.conf, main, pacport
+; MsgBox, The value is %pac_port%.
+global pacPort := pac_port
+IniRead, proxy_port, gpclient.conf, main, proxyport
+; MsgBox, The value is %proxy_port%.
+global proxyPort := proxy_port
+
+; 当前选择的模式
+global currentMode := 1
 
 ; 默认开启pac
 choiceMode(1)
@@ -75,37 +83,75 @@ choiceMode(mode){
     unCheckAllItems()
     if ( mode==0 ) {
         ; 是否已经选择该选项
-        menu, tray, ToggleCheck, 关闭代理   ; 打勾
-        menu, tray, ToggleEnable, 关闭代理  ; 禁用
+        menu, tray, Check, 关闭代理   ; 打勾
+        menu, tray, Disable, 关闭代理  ; 禁用
     } else if ( mode==1 ) {
         ; 是否已经选择该选项
-        menu, tray, ToggleCheck, pac模式   ; 打勾
-        menu, tray, ToggleEnable, pac模式  ; 禁用
+        menu, tray, Check, pac模式   ; 打勾
+        menu, tray, Disable, pac模式  ; 禁用
     } else if ( mode==2 ) {
         ; 是否已经选择该选项
-        menu, tray, ToggleCheck, 全局模式   ; 打勾
-        menu, tray, ToggleEnable, 全局模式  ; 禁用
+        menu, tray, Check, 全局模式   ; 打勾
+        menu, tray, Disable, 全局模式  ; 禁用
     }
+}
+
+; 设置代理模式
+setProxyMode(mode){
+    if ( mode==0 ){
+        clearSysProxy()
+    } else if ( mode==1 ){
+        pacSysProxy()
+    } else if ( mode==2 ){
+        allSysProxy()
+    }
+    currentMode := mode
 }
 
 ; 关闭代理
 closeProxyHandler:
     choiceMode(0)
-    clearSysProxy()
+    setProxyMode(0)
 return
 
 ; pac模式
 pacProxyHandler:
     choiceMode(1)
-    pacSysProxy()
+    setProxyMode(1)
 return
 
 ; 全局模式
 allProxyHandler:
     choiceMode(2)
-    allSysProxy()
+    setProxyMode(2)
 return
 
+; 配置GUI
+configHandler:
+    Gui, 1: Add, Text, , proxy的端口：
+    Gui, 1: Add, Edit, vProxyPort, %proxyPort%
+    Gui, 1: Add, Text, , pac服务的端口：
+    Gui, 1: Add, Edit, vPacPort, %pacPort%
+    Gui, 1: Add, Button, Default w80, 保存   
+    Gui, 1: Show
+return
+
+; 把配置的端口写入
+Button保存:
+    ; MsgBox, %currentMode%
+    GuiControlGet, ProxyPort
+    IniWrite, %ProxyPort%, gpclient.conf, main, proxyport
+    GuiControlGet, PacPort
+    IniWrite, %PacPort%, gpclient.conf, main, pacport
+    setProxyMode(currentMode)
+    MsgBox, 保存成功
+    Gui, 1: Destroy
+return
+
+; 配置窗口关闭的时候destroy
+GuiClose:
+    Gui, 1: Destroy
+return
 
 ; 退出
 exitHandler:
