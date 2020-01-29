@@ -145,10 +145,20 @@ Button保存:
         MsgBox, ProxyPort不能为空！
         return
     }
+    port := ProxyPort
+    if (port < 1 or port > 65535) {
+        MsgBox, ProxyPort填写异常！只能是1~65535！
+        return
+    }
     ; 从GUI中获取Edit中vPacPort的值
     GuiControlGet, PacPort
     if(PacPort==""){
         MsgBox, PacPort不能为空！
+        return
+    }
+    port := PacPort
+    if (port < 1 or port > 65535) {
+        MsgBox, PacPort填写异常！只能是1~65535！
         return
     }
     ; 把修改的值写入配置
