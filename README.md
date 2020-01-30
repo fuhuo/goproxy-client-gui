@@ -21,7 +21,7 @@
 
 2、本程序通过调用goproxy-client的start.vbs启用proxy.exe，安全退出时会关闭proxy.exe
 
-### 已知问题：
+### 已知问题
 
 ~~1、之前没考虑好端口的问题，目前只能是goproxy中使用1080端口作为代理端口，后续会优化~~
 
