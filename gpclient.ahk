@@ -9,8 +9,11 @@ Menu, tray, Add, 关闭代理, closeProxyHandler
 Menu, tray, Add, pac模式, pacProxyHandler
 Menu, tray, Add, 全局模式, allProxyHandler
 Menu, tray, Add   ; 添加分割线
-Menu, tray, Add, 配置, configHandler
-Menu, tray, Add, 编辑pac, editPacHandler
+; Menu, tray, Add, 配置, configHandler
+; 设置->子菜单
+Menu, subtray, Add, 端口, configHandler
+Menu, subtray, Add, pac, editPacHandler
+Menu, tray, Add, 设置, :subtray    ; 创建设置菜单，子菜单指向上方的subtray
 Menu, tray, Add   ; 添加分割线
 Menu, tray, Add, 关于, aboutHandler
 Menu, tray, Add   ; 添加分割线
