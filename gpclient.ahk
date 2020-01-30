@@ -5,12 +5,15 @@
 ; OnExit, closeProxy()   ; 退出的时候执行OnExit钩子函数
 ; 托盘菜单
 Menu, tray, NoStandard   ; 关闭默认菜单
-; Menu, tray, Add   ; 添加分割线
 Menu, tray, Add, 关闭代理, closeProxyHandler
 Menu, tray, Add, pac模式, pacProxyHandler
 Menu, tray, Add, 全局模式, allProxyHandler
 Menu, tray, Add   ; 添加分割线
 Menu, tray, Add, 配置, configHandler
+Menu, tray, Add, 编辑pac, editPacHandler
+Menu, tray, Add   ; 添加分割线
+Menu, tray, Add, 关于, aboutHandler
+Menu, tray, Add   ; 添加分割线
 Menu, tray, Add, 退出, exitHandler
 
 ; pac的http服务监听端口
@@ -30,6 +33,7 @@ global pacserverId := -999
 ; 默认开启pac
 choiceMode(1)
 pacSysProxy()
+; 运行start.vbs
 Run start.vbs
 return 
 
@@ -191,9 +195,20 @@ GuiClose:
     Gui, 1: Destroy
 return
 
+; 编辑pac文件
+editPacHandler:
+    Run, pac.txt
+return
+
+; 关于，打开主页
+aboutHandler:
+    Run, https://github.com/fuhuo/goproxy-client-gui
+return
+
 ; 退出
 exitHandler:
     clearSysProxy()
     ; RunCMD("taskkill /f /im proxy.exe")
     Process, Close, proxy.exe
+    Sleep, 500
 ExitApp    ; 退出程序
