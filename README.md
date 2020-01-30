@@ -9,7 +9,7 @@
 
 3、把gpclient压缩包解压到goproxy-client同目录
 
-4、找到合适的pac.txt文件（可以直接拿ss客户端的），放到goproxy的client目录
+4、找到合适的pac.txt文件（可以直接拿ss客户端的，[参考这个](https://github.com/fuhuo/pac/blob/master/pac.txt)），放到goproxy-client目录
 
 5、双击打开gpclient.exe小托盘->右键，点击【配置】，proxy端口配置成与你boostrap.bat的-p参数的端口一致，pac服务端口随意配置，但不能与系统其他服务的端口（包括proxy的端口）重复，以免被占用导致不可用
 
@@ -17,9 +17,9 @@
 
 ### 说明
 
-1、本程序使用ahk和go开发，暂时只支持windows(只在win10的64位系统测试过)
+1、本程序使用ahk和go开发，暂时只支持windows（只在win10的64位系统测试过）
 
-2、本程序通过调用proxy的start.vbs启用，安全退出时会关闭proxy.exe
+2、本程序通过调用goproxy-client的start.vbs启用proxy.exe，安全退出时会关闭proxy.exe
 
 ### 已知问题：
 
@@ -27,6 +27,7 @@
 
 ~~2、pac的http server端口也写死了1079，这两个端口如果有冲突，目前需要自己下载ahk脚本并用autohotkey进行重新编译成exe，后续会优化~~
 
-1、有时候会出现系统代理配置不完整的情况，需要手动重新切换一下模式，待解决
+~~3、有时候会出现系统代理配置不完整的情况，需要手动重新切换一下模式，待解决~~
 
-2、目前仅支持单个服务配置
+4、目前仅支持单个服务配置
+
