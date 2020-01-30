@@ -9,7 +9,7 @@
 
 3、把gpclient压缩包解压到goproxy-client同目录
 
-4、找到合适的pac.txt文件（可以直接拿ss客户端的），放到goproxy的client目录
+4、找到合适的pac.txt文件（可以直接拿ss客户端的[参考](https://github.com/fuhuo/pac/blob/master/pac.txt)），放到goproxy的client目录
 
 5、双击打开gpclient.exe小托盘->右键，点击【配置】，proxy端口配置成与你boostrap.bat的-p参数的端口一致，pac服务端口随意配置，但不能与系统其他服务的端口（包括proxy的端口）重复，以免被占用导致不可用
 
