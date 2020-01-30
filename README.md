@@ -19,7 +19,7 @@
 
 1、本程序使用ahk和go开发，暂时只支持windows（只在win10的64位系统测试过）
 
-2、本程序通过调用proxy的start.vbs启用，安全退出时会关闭proxy.exe
+2、本程序通过调用goproxy-client的start.vbs启用proxy.exe，安全退出时会关闭proxy.exe
 
 ### 已知问题：
 
