@@ -24,6 +24,9 @@ global proxyPort := proxy_port
 ; 当前选择的模式
 global currentMode := 1
 
+; pacserver的pid
+global pacserverId := -999
+
 ; 默认开启pac
 choiceMode(1)
 pacSysProxy()
@@ -33,14 +36,17 @@ return
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; 运行cmd命令
-RunCMD(command) {
-    Run, % ComSpec " /C" command, , Hide
-}
+; RunCMD(command) {
+;     Run, % ComSpec " /C" command, , Hide
+; }
 
 
 ; 关闭代理
 clearSysProxy(){
-    RunCMD("taskkill /f /im pacserver.exe")
+    if(pacserverId != -999){
+        Process, Close, %pacserverId%
+    }
+    ; RunCMD("taskkill /f /im pacserver.exe")
     RegWrite, REG_DWORD, HKEY_CURRENT_USER, Software\Microsoft\Windows\CurrentVersion\Internet Settings, ProxyEnable, 0
     ; RunCMD("reg add ""HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"" /v ProxyEnable /t REG_DWORD /d 0 /f" )
     RegWrite, REG_SZ, HKEY_CURRENT_USER, Software\Microsoft\Windows\CurrentVersion\Internet Settings, ProxyServer, ""
@@ -59,7 +65,8 @@ pacSysProxy(){
     Random, rand, 100000, 999999
     ; RunCMD("reg add ""HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"" /v AutoConfigURL /d ""http://127.0.0.1:" . pacPort . "/pacfile?r=" . rand . """ /f" )
     RegWrite, REG_SZ, HKEY_CURRENT_USER, Software\Microsoft\Windows\CurrentVersion\Internet Settings, AutoConfigURL, http://127.0.0.1:%pacPort%/pacfile?r=%rand%
-    RunCMD("pacserver.exe " . pacPort . " " . proxyPort)
+    ; RunCMD("pacserver.exe " . pacPort . " " . proxyPort)
+    Run, pacserver.exe %pacPort% %proxyPort%, , Hide, pacserverId
 }
 
 ; 全局模式
@@ -187,5 +194,6 @@ return
 ; 退出
 exitHandler:
     clearSysProxy()
-    RunCMD("taskkill /f /im proxy.exe")
+    ; RunCMD("taskkill /f /im proxy.exe")
+    Process, Close, proxy.exe
 ExitApp    ; 退出程序
