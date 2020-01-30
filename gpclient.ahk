@@ -3,7 +3,10 @@
 #Persistent  ; 让脚本持续运行, 直到用户退出.
 #SingleInstance  ; 只能运行一个程序实例
 ; OnExit, closeProxy()   ; 退出的时候执行OnExit钩子函数
-; 托盘菜单
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; 托盘菜单 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 Menu, tray, NoStandard   ; 关闭默认菜单
 Menu, tray, Add, 关闭代理, closeProxyHandler
 Menu, tray, Add, pac模式, pacProxyHandler
@@ -19,6 +22,11 @@ Menu, tray, Add, 关于, aboutHandler
 Menu, tray, Add   ; 添加分割线
 Menu, tray, Add, 退出, exitHandler
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Main
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ; pac的http服务监听端口
 IniRead, pac_port, gpclient.conf, main, pacport
 ; MsgBox, The value is %pac_port%.
@@ -29,17 +37,24 @@ global proxyPort := proxy_port
 
 ; 当前选择的模式
 global currentMode := 1
+IniRead, current_mode, gpclient.conf, main, proxymode
+if ( current_mode >= 0 and current_mode <= 2 ){
+    currentMode := current_mode
+}
+
 
 ; pacserver的pid
 global pacserverId := -999
 
-; 默认开启pac
-choiceMode(1)
-pacSysProxy()
+; 默认打开上次的代理模式
+choiceMode(currentMode)
+setProxyMode(currentMode)
 ; 运行start.vbs
 Run start.vbs
 return 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; 处理逻辑
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; 运行cmd命令
@@ -128,6 +143,8 @@ setProxyMode(mode){
         allSysProxy()
     }
     currentMode := mode
+    ; 写入配置
+    IniWrite, %currentMode%, gpclient.conf, main, proxymode
 }
 
 ; 关闭代理
