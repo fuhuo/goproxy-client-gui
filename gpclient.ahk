@@ -5,18 +5,52 @@
 ; OnExit, closeProxy()   ; 退出的时候执行OnExit钩子函数
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; 初始化
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; 全局当前选择的模式
+global currentMode := 1
+; 读取上次关闭时候选择的模式
+IniRead, current_mode, gpclient.conf, main, proxymode
+if ( current_mode >= 0 and current_mode <= 2 ){
+    currentMode := current_mode
+}
+
+; 读取pac的http服务监听端口
+IniRead, pac_port, gpclient.conf, main, pacport
+; 全局pac server端口
+global pacPort := pac_port
+
+; 读取proxy端口 
+IniRead, proxy_port, gpclient.conf, main, proxyport
+; 全局proxy端口
+global proxyPort := proxy_port
+
+; pacserver的pid
+global pacserverId := -999
+
+; 开机启动快捷方式
+global startOnBootLnkFile = A_AppData . "\Microsoft\Windows\Start Menu\Programs\Startup\gpclient.lnk"
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; 托盘菜单 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 Menu, tray, NoStandard   ; 关闭默认菜单
+; 展示proxy端口，只做展示，所以disable
+Menu, tray, Add, proxy端口:%proxyPort%, configHandler
+Menu, tray, Disable, proxy端口:%proxyPort%,
+Menu, tray, Add   ; 添加分割线
 Menu, tray, Add, 关闭代理, closeProxyHandler
 Menu, tray, Add, pac模式, pacProxyHandler
 Menu, tray, Add, 全局模式, allProxyHandler
 Menu, tray, Add   ; 添加分割线
 ; Menu, tray, Add, 配置, configHandler
 ; 设置->子菜单
-Menu, subtray, Add, 端口, configHandler
-Menu, subtray, Add, pac, editPacHandler
-Menu, tray, Add, 设置, :subtray    ; 创建设置菜单，子菜单指向上方的subtray
+Menu, subtraySetting, Add, 端口, configHandler
+Menu, subtraySetting, Add, pac, editPacHandler
+Menu, subtraySetting, Add, 开机启动, startOnBootHandler
+startOnBootMenuCheck()
+Menu, tray, Add, 设置, :subtraySetting    ; 创建设置菜单，子菜单指向上方的subtraySetting
 Menu, tray, Add   ; 添加分割线
 Menu, tray, Add, 关于, aboutHandler
 Menu, tray, Add   ; 添加分割线
@@ -27,25 +61,6 @@ Menu, tray, Add, 退出, exitHandler
 ; Main
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; pac的http服务监听端口
-IniRead, pac_port, gpclient.conf, main, pacport
-; MsgBox, The value is %pac_port%.
-global pacPort := pac_port
-IniRead, proxy_port, gpclient.conf, main, proxyport
-; MsgBox, The value is %proxy_port%.
-global proxyPort := proxy_port
-
-; 当前选择的模式
-global currentMode := 1
-IniRead, current_mode, gpclient.conf, main, proxymode
-if ( current_mode >= 0 and current_mode <= 2 ){
-    currentMode := current_mode
-}
-
-
-; pacserver的pid
-global pacserverId := -999
-
 ; 默认打开上次的代理模式
 choiceMode(currentMode)
 setProxyMode(currentMode)
@@ -54,7 +69,7 @@ Run start.vbs
 return 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; 处理逻辑
+; 操作函数
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; 运行cmd命令
@@ -104,6 +119,13 @@ allSysProxy(){
     RegWrite, REG_SZ, HKEY_CURRENT_USER, Software\Microsoft\Windows\CurrentVersion\Internet Settings, ProxyOverride, %proxy_skip_hosts%
 }
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; UI操作
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; 修改proxy端口菜单文字
+renameProxyPortMenuItem(oldport, newport){
+    menu, tray, Rename, proxy端口:%oldport%, proxy端口:%newport%
+}
 
 ; 取消所有勾选项
 unCheckAllItems(){
@@ -133,6 +155,18 @@ choiceMode(mode){
     }
 }
 
+; 开机启动按钮是否勾选
+startOnBootMenuCheck(){
+    if(FileExist(startOnBootLnkFile)){
+        menu, subtraySetting, Check, 开机启动
+    }else{
+        menu, subtraySetting, UnCheck, 开机启动
+    }
+}
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; 逻辑操作
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; 设置代理模式
 setProxyMode(mode){
     if ( mode==0 ){
@@ -179,6 +213,7 @@ return
 Button保存:
     ; MsgBox, %currentMode%
     ; 从GUI中获取Edit中vProxyPort的值
+    oldProxyPort := proxyPort
     GuiControlGet, ProxyPort
     if(ProxyPort==""){
         MsgBox, ProxyPort不能为空！
@@ -189,6 +224,7 @@ Button保存:
         MsgBox, ProxyPort填写异常！只能是1~65535！
         return
     }
+    newProxyPort := proxyPort
     ; 从GUI中获取Edit中vPacPort的值
     GuiControlGet, PacPort
     if(PacPort==""){
@@ -208,6 +244,8 @@ Button保存:
     setProxyMode(currentMode)
     MsgBox, 保存成功
     Gui, 1: Destroy
+    ; 修改端口展示的菜单
+    renameProxyPortMenuItem(oldProxyPort, newProxyPort)
 return
 
 ; 配置窗口关闭的时候destroy
@@ -218,6 +256,17 @@ return
 ; 编辑pac文件
 editPacHandler:
     Run, pac.txt
+return
+
+; 开机启动
+startOnBootHandler:
+; msgbox, %A_AppData%\Microsoft\Windows\Start Menu\Programs\Startup\gpclient.lnk
+    if(FileExist(startOnBootLnkFile)){
+        FileDelete, %startOnBootLnkFile%
+    }else{
+        FileCreateShortcut, %A_WorkingDir%\%A_ScriptName%, %startOnBootLnkFile%
+    }
+    startOnBootMenuCheck()
 return
 
 ; 关于，打开主页
