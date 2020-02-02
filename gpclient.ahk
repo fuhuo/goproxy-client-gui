@@ -12,23 +12,65 @@
 ; 设置工作目录为脚本目录
 SetWorkingDir %A_ScriptDir%
 
+; 检查是否缺少必要配置文件
+If(not FileExist("gpclient.conf")){
+    MsgBox, "缺少gpclient.conf文件！"
+    ExitApp
+}else if ( not FileExist("pac.txt")){
+    MsgBox, "缺少pac.txt文件！"
+    ExitApp
+}
+
 ; 全局当前选择的模式
 global currentMode := 1
 ; 读取上次关闭时候选择的模式
 IniRead, current_mode, gpclient.conf, main, proxymode
 if ( current_mode >= 0 and current_mode <= 2 ){
     currentMode := current_mode
+}else {
+    setProxyMode(currentMode)
 }
 
 ; 读取pac的http服务监听端口
 IniRead, pac_port, gpclient.conf, main, pacport
+if(pac_port=="ERROR" || pac_port==""){
+    pac_port := 1079
+    ; 把修改的值写入配置
+    IniWrite, %pac_port%, gpclient.conf, main, pacport
+}
 ; 全局pac server端口
 global pacPort := pac_port
 
 ; 读取proxy端口 
 IniRead, proxy_port, gpclient.conf, main, proxyport
+if(proxy_port=="ERROR" || proxy_port==""){
+    proxy_port := 1080
+    ; 把修改的值写入配置
+    IniWrite, %proxy_port%, gpclient.conf, main, proxyport
+}
 ; 全局proxy端口
 global proxyPort := proxy_port
+
+; 启动命令，当为空时，不执行任何命令
+IniRead, startup_cmd, gpclient.conf, main, startupcommand
+if(startup_cmd=="ERROR"){
+    startup_cmd := "start.vbs"
+    ; 把修改的值写入配置
+    IniWrite, %startup_cmd%, gpclient.conf, main, startupcommand
+}
+; 全局使用启动命令
+global startupCommand := startup_cmd
+
+; 退出时kill的程序，当为空时，不杀任何程序
+IniRead, kill_onexit, gpclient.conf, main, killonexit
+if(kill_onexit=="ERROR"){
+    kill_onexit := "proxy.exe"
+    ; 把修改的值写入配置
+    IniWrite, %kill_onexit%, gpclient.conf, main, killonexit
+}
+; 全局使用启动命令
+global killOnExit := kill_onexit
+
 
 ; pacserver的pid
 global pacserverId := -999
@@ -59,7 +101,7 @@ Menu, tray, Add   ; 添加分割线
 Menu, tray, Add, 关于, aboutHandler
 Menu, tray, Add   ; 添加分割线
 Menu, tray, Add, 退出, exitHandler
-
+setTrayTips()
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Main
@@ -69,7 +111,9 @@ Menu, tray, Add, 退出, exitHandler
 choiceMode(currentMode)
 setProxyMode(currentMode)
 ; 运行start.vbs
-Run start.vbs
+if(startupcommand != ""){
+    Run %startupCommand%
+}
 return 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -141,7 +185,7 @@ unCheckAllItems(){
     menu, tray, Enable, 全局模式
 }
 
-; 勾选选项
+; 勾选代理选项
 choiceMode(mode){
     unCheckAllItems()
     if ( mode==0 ) {
@@ -168,6 +212,20 @@ startOnBootMenuCheck(){
     }
 }
 
+; 设置鼠标悬停在托盘图标上的提示，信息包括：当前代理模式、proxy端口、pac端口
+setTrayTips(){
+    tipstxt := ""
+    if(currentMode==0){
+        tipstxt = %tipstxt%当前模式：关闭代理
+    }else if (currentMode==1){
+        tipstxt = %tipstxt%当前模式：pac模式
+    }else if (currentMode==2){
+        tipstxt = %tipstxt%当前模式：全局模式
+    }
+    tipstxt = %tipstxt%`nproxy端口:%proxyPort%`npac端口:%pacPort%
+    Menu, tray, Tip, %tipstxt%
+}
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; 逻辑操作
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -189,18 +247,21 @@ setProxyMode(mode){
 closeProxyHandler:
     choiceMode(0)
     setProxyMode(0)
+    setTrayTips()
 return
 
 ; pac模式
 pacProxyHandler:
     choiceMode(1)
     setProxyMode(1)
+    setTrayTips()
 return
 
 ; 全局模式
 allProxyHandler:
     choiceMode(2)
     setProxyMode(2)
+    setTrayTips()
 return
 
 ; 配置GUI
@@ -250,6 +311,7 @@ Button保存:
     Gui, 1: Destroy
     ; 修改端口展示的菜单
     renameProxyPortMenuItem(oldProxyPort, newProxyPort)
+    setTrayTips()
 return
 
 ; 配置窗口关闭的时候destroy
@@ -282,6 +344,8 @@ return
 exitHandler:
     clearSysProxy()
     ; RunCMD("taskkill /f /im proxy.exe")
-    Process, Close, proxy.exe
+    if(killOnExit != ""){
+        Process, Close, %killOnExit%
+    }
     Sleep, 500
 ExitApp    ; 退出程序
