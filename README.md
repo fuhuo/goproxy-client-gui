@@ -1,6 +1,8 @@
 # goproxy-client-gui for windows
 ### 本gui程序基于https://github.com/snail007/goproxy 的客户端程序开发
 
+### 2020-02-11 注：目前用着比较稳定，没啥重大的bug，就不更新了
+
 ### 快速使用
 
 1、确保已配置好goproxy-client端【[下载](https://github.com/snail007/goproxy/releases)】的bootstrap.bat文件（即确保proxy可正常使用）
