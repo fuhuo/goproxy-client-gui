@@ -31,6 +31,17 @@ if ( current_mode >= 0 and current_mode <= 2 ){
     setProxyMode(currentMode)
 }
 
+
+; 读取pac的http服务监听host
+IniRead, pac_host, gpclient.conf, main, pachost
+if(pac_host=="ERROR" || pac_host==""){
+    pac_host := "127.0.0.1"
+    ; 把修改的值写入配置
+    IniWrite, %pac_host%, gpclient.conf, main, pachost
+}
+; 全局pac server host
+global pacHost := pac_host
+
 ; 读取pac的http服务监听端口
 IniRead, pac_port, gpclient.conf, main, pacport
 if(pac_port=="ERROR" || pac_port==""){
@@ -51,7 +62,7 @@ if(proxy_port=="ERROR" || proxy_port==""){
 ; 全局proxy端口
 global proxyPort := proxy_port
 
-; 启动命令，当为空时，不执行任何命令
+; 启动命令
 IniRead, startup_cmd, gpclient.conf, main, startupcommand
 if(startup_cmd=="ERROR"){
     startup_cmd := "start.vbs"
@@ -61,7 +72,7 @@ if(startup_cmd=="ERROR"){
 ; 全局使用启动命令
 global startupCommand := startup_cmd
 
-; 退出时kill的程序，当为空时，不杀任何程序
+; 退出时kill的程序
 IniRead, kill_onexit, gpclient.conf, main, killonexit
 if(kill_onexit=="ERROR"){
     kill_onexit := "proxy.exe"
@@ -151,7 +162,7 @@ pacSysProxy(){
     ; RunCMD("reg add ""HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"" /v AutoConfigURL /d ""http://127.0.0.1:" . pacPort . "/pacfile?r=" . rand . """ /f" )
     RegWrite, REG_SZ, HKEY_CURRENT_USER, Software\Microsoft\Windows\CurrentVersion\Internet Settings, AutoConfigURL, http://127.0.0.1:%pacPort%/pacfile?r=%rand%
     ; RunCMD("pacserver.exe " . pacPort . " " . proxyPort)
-    Run, pacserver.exe %pacPort% %proxyPort%, , Hide, pacserverId
+    Run, pacserver.exe %pacHost% %pacPort% %proxyPort%, , Hide, pacserverId
 }
 
 ; 全局模式
@@ -222,7 +233,7 @@ setTrayTips(){
     }else if (currentMode==2){
         tipstxt = %tipstxt%当前模式：全局模式
     }
-    tipstxt = %tipstxt%`nproxy端口:%proxyPort%`npac端口:%pacPort%
+    tipstxt = %tipstxt%`npacIP:%pacHost%`nproxy端口:%proxyPort%`npac端口:%pacPort%
     Menu, tray, Tip, %tipstxt%
 }
 
