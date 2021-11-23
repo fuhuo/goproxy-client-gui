@@ -61,7 +61,6 @@ func pacHandler(w http.ResponseWriter, r *http.Request) {
 	pacfilepath := "pac.txt"
 	pactmpl := ReadFile(pacfilepath)
 	pactxt := strings.Replace(pactmpl, "__PROXY__", "PROXY 127.0.0.1:"+proxyPort+";", -1)
-	fmt.Printf("%v", pactxt)
 	fmt.Fprintf(w, pactxt)
 }
 
